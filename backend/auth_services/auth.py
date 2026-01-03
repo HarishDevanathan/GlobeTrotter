@@ -1,49 +1,56 @@
 import os
+import uuid
 from fastapi import HTTPException
 from supabase import create_client
 from dotenv import load_dotenv
+from passlib.context import CryptContext
 
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-    raise RuntimeError("Supabase environment variables not set")
-
-# Create ONE reusable Supabase client
 supabase = create_client(
     SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY
 )
 
-# ----------------------------------
-# SIGNUP USER
-# ----------------------------------
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+# ---------------------------
+# PASSWORD HELPERS
+# ---------------------------
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(password: str, hashed: str) -> bool:
+    return pwd_context.verify(password, hashed)
+
+
+# ---------------------------
+# SIGNUP USER (USERS TABLE)
+# ---------------------------
 def signup_user(data):
-    """
-    data: SignupRequest schema
-    """
     try:
-        # Create user in Supabase Auth
-        auth_response = supabase.auth.admin.create_user({
-            "email": data.email,
-            "password": data.password,
-            "email_confirm": True
-        })
+        user_id = str(uuid.uuid4())
 
-        user_id = auth_response.user.id
+        # Check email exists
+        existing = supabase.table("users").select("id").eq("email", data.email).execute()
+        if existing.data:
+            raise HTTPException(status_code=400, detail="Email already registered")
 
-        # Store additional profile data
-        supabase.table("profiles").insert({
+        supabase.table("users").insert({
             "id": user_id,
             "first_name": data.first_name,
             "last_name": data.last_name,
-            "phone": data.phone,
+            "email": data.email,
+            "phone_number": data.phone,
             "city": data.city,
             "country": data.country,
             "additional_info": data.additional_info,
-            "photo_url": data.photo_url
+            "photo_url": data.photo_url,
+            "password_hash": hash_password(data.password)
         }).execute()
 
         return {
@@ -51,42 +58,36 @@ def signup_user(data):
             "user_id": user_id
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-# ----------------------------------
+# ---------------------------
 # LOGIN USER
-# ----------------------------------
+# ---------------------------
 def login_user(data):
-    """
-    data: LoginRequest schema
-    """
     try:
-        response = supabase.auth.sign_in_with_password({
-            "email": data.email,
-            "password": data.password
-        })
+        response = supabase.table("users") \
+            .select("id, password_hash, email") \
+            .eq("email", data.email) \
+            .single() \
+            .execute()
+
+        user = response.data
+        if not user or not verify_password(data.password, user["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
 
         return {
-            "access_token": response.session.access_token,
-            "refresh_token": response.session.refresh_token,
+            "message": "Login successful",
             "user": {
-                "id": response.user.id,
-                "email": response.user.email
+                "id": user["id"],
+                "email": user["email"]
             }
         }
 
+    except HTTPException:
+        raise
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid email or password")
-
-
-# ----------------------------------
-# VERIFY JWT TOKEN
-# ----------------------------------
-def get_current_user(token: str):
-    try:
-        user = supabase.auth.get_user(token)
-        return user.user
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
