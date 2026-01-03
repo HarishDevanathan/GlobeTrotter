@@ -1,24 +1,43 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/GlobeTrotterAuth.css"; // Ensure this path is correct
+import { authAPI } from "../services/api";
+import "../styles/GlobeTrotterAuth.css";
 
 const Login = () => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError(""); // Clear error on input change
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Logic: Authenticate User
-    setTimeout(() => {
+    setError("");
+
+    try {
+      const response = await authAPI.login(formData);
+      console.log("Login successful:", response);
+      navigate("/trips");
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
       setLoading(false);
-      navigate("/trips"); // Redirects to TripListing based on your App.jsx
-    }, 1500);
+    }
   };
 
   return (
     <div className="auth-wrapper">
-
       {/* LEFT: FORM */}
       <div className="auth-side-form">
         <div className="auth-content-box">
@@ -28,15 +47,31 @@ const Login = () => {
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Login to access your personalized itineraries.</p>
 
-          <form onSubmit={handleLogin}>
+          {error && (
+            <div style={{
+              padding: '12px',
+              background: '#FEE2E2',
+              border: '1px solid #FCA5A5',
+              borderRadius: '8px',
+              color: '#DC2626',
+              fontSize: '0.9rem',
+              marginBottom: '20px'
+            }}>
+              {error}
+            </div>
+          )}
 
+          <form onSubmit={handleLogin}>
             <div className="form-group">
-              <label className="form-label">Username / Email</label>
+              <label className="form-label">Email</label>
               <input
-                type="text"
+                type="email"
+                name="email"
                 required
-                placeholder="Enter username or email"
+                placeholder="you@example.com"
                 className="form-input"
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -49,9 +84,12 @@ const Login = () => {
               </div>
               <input
                 type="password"
+                name="password"
                 required
                 placeholder="••••••••"
                 className="form-input"
+                value={formData.password}
+                onChange={handleChange}
               />
             </div>
 
@@ -83,7 +121,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };

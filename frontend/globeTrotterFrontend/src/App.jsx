@@ -1,67 +1,93 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
 
-// Layout Component
-import Layout from './components/Layout';
-
-// Pages (Using your exact filenames)
+// Public Pages
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Home from './pages/Home';
-import CreateTrip from './pages/CreateTrip';
+
+// Protected Pages
 import TripListing from './pages/TripListing';
-import BuildIternery from './pages/BuildIternery';
-import CalenderView from './pages/CalenderView';
-import IternaryView from './pages/IternaryView';
+import CreateTrip from './pages/CreateTrip';
+import BuildItinerary from './pages/BuildItinerary';
+import ItineraryView from './pages/ItineraryView';
 import SearchActivity from './pages/SearchActivity';
+import CalendarView from './pages/CalendarView';
 import Profile from './pages/Profile';
-
-import './App.css';
-
-function NotFound() {
-  return (
-    <div style={{ padding: "50px", textAlign: "center", marginLeft: "260px" }}>
-      <h1>404 - Not Found</h1>
-      <p>The page you are looking for does not exist.</p>
-    </div>
-  );
-}
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-
-        {/* --- PUBLIC ROUTES (No Sidebar) --- */}
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        {/* Protected Routes */}
+        <Route
+          path="/trips"
+          element={
+            <ProtectedRoute>
+              <TripListing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/create-trip"
+          element={
+            <ProtectedRoute>
+              <CreateTrip />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/build-itinerary/:tripId"
+          element={
+            <ProtectedRoute>
+              <BuildItinerary />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/itinerary-view/:tripId"
+          element={
+            <ProtectedRoute>
+              <ItineraryView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/search-activities"
+          element={
+            <ProtectedRoute>
+              <SearchActivity />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <CalendarView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* --- PRIVATE ROUTES (With Sidebar Layout) --- */}
-        <Route element={<Layout />}>
-
-          {/* Main Dashboard showing all trips */}
-          <Route path="/trips" element={<TripListing />} />
-
-          {/* Also make /dashboard redirect to /trips so your previous 404 works */}
-          <Route path="/dashboard" element={<Navigate to="/trips" replace />} />
-
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/calendar-view" element={<CalenderView />} />
-          <Route path="/search-activity" element={<SearchActivity />} />
-
-          {/* Specific Trip Actions */}
-          <Route path="/trips/create" element={<CreateTrip />} />
-          <Route path="/build-itinerary" element={<BuildIternery />} />
-          <Route path="/itinerary-view" element={<IternaryView />} />
-
-          {/* 404 INSIDE layout so header stays */}
-          <Route path="*" element={<NotFound />} />
-
-        </Route>
-
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 

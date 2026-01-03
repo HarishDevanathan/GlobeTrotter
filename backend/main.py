@@ -122,6 +122,16 @@ def get_user_by_id(user_id: str):
         raise HTTPException(status_code=404, detail="User not found")
     return response.data
 
+def serialize_dates(data: dict) -> dict:
+    """Convert date objects to ISO format strings"""
+    serialized = {}
+    for key, value in data.items():
+        if isinstance(value, date):
+            serialized[key] = value.isoformat()
+        else:
+            serialized[key] = value
+    return serialized
+
 # ==================== AUTH ENDPOINTS ====================
 
 @app.get("/")
@@ -334,11 +344,20 @@ def create_trip(payload: TripCreate, user_id: str = Header(..., alias="X-User-Id
         raise HTTPException(status_code=400, detail="Start date must be before end date")
     
     trip_id = str(uuid.uuid4())
-    supabase.table("trips").insert({
+    
+    # Convert dates to strings for JSON serialization
+    trip_data = {
         "id": trip_id,
         "user_id": user_id,
-        **payload.dict()
-    }).execute()
+        "title": payload.title,
+        "description": payload.description,
+        "start_date": payload.start_date.isoformat(),
+        "end_date": payload.end_date.isoformat(),
+        "cover_image": payload.cover_image,
+        "is_public": payload.is_public
+    }
+    
+    supabase.table("trips").insert(trip_data).execute()
     
     # Create default budget entry
     supabase.table("trip_budget").insert({
@@ -360,6 +379,9 @@ def update_trip(trip_id: str, payload: TripUpdate, user_id: str = Header(..., al
     update_data = {k: v for k, v in payload.dict().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # Serialize dates
+    update_data = serialize_dates(update_data)
     
     supabase.table("trips").update(update_data).eq("id", trip_id).execute()
     return {"message": "Trip updated successfully"}
@@ -400,10 +422,18 @@ def create_trip_stop(trip_id: str, payload: TripStopCreate, user_id: str = Heade
         raise HTTPException(status_code=403, detail="Access denied")
     
     stop_id = str(uuid.uuid4())
-    supabase.table("trip_stops").insert({
+    
+    # Serialize dates
+    stop_data = {
         "id": stop_id,
-        **payload.dict()
-    }).execute()
+        "trip_id": payload.trip_id,
+        "city_id": payload.city_id,
+        "start_date": payload.start_date.isoformat(),
+        "end_date": payload.end_date.isoformat(),
+        "stop_order": payload.stop_order
+    }
+    
+    supabase.table("trip_stops").insert(stop_data).execute()
     
     return {"message": "Trip stop created successfully", "stop_id": stop_id}
 
@@ -436,10 +466,17 @@ def add_activity_to_stop(stop_id: str, payload: TripActivityCreate, user_id: str
         raise HTTPException(status_code=403, detail="Access denied")
     
     activity_id = str(uuid.uuid4())
-    supabase.table("trip_activities").insert({
+    
+    # Serialize dates
+    activity_data = {
         "id": activity_id,
-        **payload.dict()
-    }).execute()
+        "trip_stop_id": payload.trip_stop_id,
+        "activity_id": payload.activity_id,
+        "scheduled_date": payload.scheduled_date.isoformat() if payload.scheduled_date else None,
+        "estimated_cost": payload.estimated_cost
+    }
+    
+    supabase.table("trip_activities").insert(activity_data).execute()
     
     return {"message": "Activity added successfully", "activity_id": activity_id}
 
