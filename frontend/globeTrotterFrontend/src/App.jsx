@@ -15,6 +15,7 @@ import CalendarView from './pages/CalendarView';
 import ItineraryView from './pages/ItineraryView';
 import SearchActivity from './pages/SearchActivity';
 import Profile from './pages/Profile';
+import ActivityRecommendations from './pages/ActivityRecommendations';
 
 // API
 import { authAPI } from './services/api';
@@ -130,6 +131,7 @@ function App() {
             <Route path="/build-itinerary" element={<BuildItinerary />} />
             <Route path="/itinerary-view/:tripId" element={<ItineraryView />} />
             <Route path="/itinerary-view" element={<ItineraryView />} />
+            <Route path="/activity-recommendations/:cityId" element={<ActivityRecommendations />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
