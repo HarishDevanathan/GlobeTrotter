@@ -2,7 +2,6 @@
 
 :root {
     --brand-primary: #4F46E5;
-    /* Your Indigo Theme Color */
     --brand-hover: #4338ca;
     --text-main: #111827;
     --text-muted: #6b7280;
@@ -89,13 +88,72 @@ body {
     outline: none;
     transition: all 0.2s ease;
     box-sizing: border-box;
-    /* Crucial for proper sizing */
 }
 
 .form-input:focus {
     background-color: #fff;
     border-color: var(--brand-primary);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.form-input:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* NEW: Form Grid for 2-column layouts */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 1.25rem;
+}
+
+/* NEW: Textarea styling */
+.form-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-input);
+    background-color: var(--bg-input);
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-textarea:focus {
+    background-color: #fff;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.form-textarea:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* NEW: File upload box */
+.file-upload-box {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 2px dashed var(--border-input);
+    background-color: var(--bg-input);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    display: block;
+}
+
+.file-upload-box:hover {
+    border-color: var(--brand-primary);
+    background-color: #eef2ff;
 }
 
 .form-row {
@@ -127,7 +185,7 @@ body {
     box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     background-color: var(--brand-hover);
     transform: translateY(-1px);
 }
@@ -135,6 +193,7 @@ body {
 .btn-primary:disabled {
     background-color: #a5b4fc;
     cursor: not-allowed;
+    transform: none;
 }
 
 /* Footer Link */
@@ -160,7 +219,6 @@ body {
     padding: 20px;
     background-color: #f3f4f6;
     display: flex;
-    /* Centers the image card */
     align-items: center;
     justify-content: center;
 }
@@ -184,7 +242,6 @@ body {
 
 .image-card-frame:hover .hero-img {
     transform: scale(1.05);
-    /* Slight zoom on hover */
 }
 
 .image-overlay-text {
@@ -207,11 +264,14 @@ body {
 @media (max-width: 900px) {
     .auth-side-image {
         display: none;
-        /* Hide image on tablet/mobile */
     }
 
     .auth-side-form {
         width: 100%;
         padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
     }
 }

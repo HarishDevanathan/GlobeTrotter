@@ -1,49 +1,31 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAppContext } from "../App";
 import { authAPI } from "../services/api";
 import "../styles/GlobeTrotterAuth.css";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    password: "",
-    phone_number: "",
-    city: "",
-    country: "",
-    additional_info: "",
-    photo_url: "",
-  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [photoName, setPhotoName] = useState("No file chosen");
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+    city: "",
+    country: "",
+    photo_url: ""
+  });
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError("");
-  };
+  const { login } = useAppContext();
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setPhotoName(file.name);
-
-      // Convert to base64 or upload to cloud storage
-      // For now, we'll just store the filename
-      // In production, upload to AWS S3, Cloudinary, etc.
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({
-          ...formData,
-          photo_url: reader.result, // This will be a base64 string
-        });
-      };
-      reader.readAsDataURL(file);
+      setPhotoName(e.target.files[0].name);
+      // In production, upload to storage and get URL
+      // For now, just store filename
     }
   };
 
@@ -52,18 +34,47 @@ const Register = () => {
     setLoading(true);
     setError("");
 
-    try {
-      const response = await authAPI.signup(formData);
-      console.log("Registration successful:", response);
+    // Validate password
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
 
-      // Auto-login after registration
-      await authAPI.login({
+    try {
+      // Call signup API
+      const signupResponse = await authAPI.signup({
         email: formData.email,
         password: formData.password,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: formData.phone,
+        city: formData.city,
+        country: formData.country,
+        photo_url: formData.photo_url
       });
 
+      console.log("Signup successful:", signupResponse);
+
+      // Auto-login after signup
+      const loginResponse = await authAPI.login({
+        email: formData.email,
+        password: formData.password
+      });
+
+      // Update context
+      login({
+        id: loginResponse.user_id,
+        name: `${loginResponse.first_name} ${loginResponse.last_name}`,
+        email: loginResponse.email,
+        first_name: loginResponse.first_name,
+        last_name: loginResponse.last_name
+      });
+
+      // Navigate to trips
       navigate("/trips");
     } catch (err) {
+      console.error("Registration failed:", err);
       setError(err.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
@@ -83,7 +94,7 @@ const Register = () => {
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }}></div>
           <div className="image-overlay-text">
             <h3 style={{ fontSize: '1.8rem', fontWeight: 700 }}>Join the Community</h3>
-            <p style={{ color: '#ddd', marginTop: '10px' }}>Connect with 50,000+ travelers planning their dream trips.</p>
+            <p style={{ color: '#ddd', marginTop: '10px' }}>Connect with travelers planning their dream trips.</p>
           </div>
         </div>
       </div>
@@ -102,16 +113,16 @@ const Register = () => {
               borderRadius: '8px',
               color: '#DC2626',
               fontSize: '0.9rem',
-              marginBottom: '15px'
+              marginTop: '15px'
             }}>
-              {error}
+              ⚠️ {error}
             </div>
           )}
 
           <form onSubmit={handleRegister} style={{ marginTop: '20px' }}>
-            {/* 1. Profile Photo */}
+            {/* Profile Photo */}
             <div className="form-group">
-              <label className="form-label">Profile Photo</label>
+              <label className="form-label">Profile Photo (Optional)</label>
               <label className="file-upload-box" style={{ display: 'block', cursor: 'pointer' }}>
                 <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
                   {photoName === "No file chosen" ? "📂 Click to upload image" : `✅ ${photoName}`}
@@ -120,116 +131,96 @@ const Register = () => {
               </label>
             </div>
 
-            {/* 2. Names Row */}
+            {/* Names Row */}
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">First Name</label>
-                <input
-                  type="text"
-                  name="first_name"
-                  className="form-input"
-                  required
+                <label className="form-label">First Name *</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  required 
                   placeholder="Jane"
-                  value={formData.first_name}
-                  onChange={handleChange}
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Last Name</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  className="form-input"
-                  required
+                <label className="form-label">Last Name *</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  required 
                   placeholder="Doe"
-                  value={formData.last_name}
-                  onChange={handleChange}
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 />
               </div>
             </div>
 
-            {/* 3. Contact Row */}
+            {/* Email and Password */}
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="form-input"
-                  required
+                <label className="form-label">Email *</label>
+                <input 
+                  type="email" 
+                  className="form-input" 
+                  required 
                   placeholder="you@example.com"
                   value={formData.email}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Phone Number</label>
-                <input
-                  type="tel"
-                  name="phone_number"
-                  className="form-input"
-                  placeholder="+1 234 567 890"
-                  value={formData.phone_number}
-                  onChange={handleChange}
+                <label className="form-label">Password *</label>
+                <input 
+                  type="password" 
+                  className="form-input" 
+                  required 
+                  placeholder="Min. 6 characters"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
               </div>
             </div>
 
-            {/* 4. Password */}
+            {/* Phone */}
             <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                name="password"
+              <label className="form-label">Phone Number (Optional)</label>
+              <input 
+                type="tel" 
                 className="form-input"
-                required
-                placeholder="••••••••"
-                minLength="6"
-                value={formData.password}
-                onChange={handleChange}
+                placeholder="+1 234 567 890"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
 
-            {/* 5. Location Row */}
+            {/* Location Row */}
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">City</label>
-                <input
-                  type="text"
-                  name="city"
+                <label className="form-label">City (Optional)</label>
+                <input 
+                  type="text" 
                   className="form-input"
                   placeholder="Paris"
                   value={formData.city}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Country</label>
-                <input
-                  type="text"
-                  name="country"
+                <label className="form-label">Country (Optional)</label>
+                <input 
+                  type="text" 
                   className="form-input"
                   placeholder="France"
                   value={formData.country}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                 />
               </div>
             </div>
 
-            {/* 6. Additional Info */}
-            <div className="form-group">
-              <label className="form-label">Additional Information</label>
-              <textarea
-                name="additional_info"
-                className="form-textarea"
-                placeholder="Tell us about your travel preferences (Optional)..."
-                value={formData.additional_info}
-                onChange={handleChange}
-              ></textarea>
-            </div>
-
             <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? "Registering..." : "Register"}
+              {loading ? "Creating Account..." : "Register"}
             </button>
           </form>
 

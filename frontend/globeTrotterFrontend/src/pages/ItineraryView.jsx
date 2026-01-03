@@ -1,45 +1,171 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { tripsAPI, tripStopsAPI, budgetAPI } from "../services/api";
 import "../styles/GlobeTrotterAuth.css";
 import "../styles/TripStyles.css";
 
 const ItineraryView = () => {
     const navigate = useNavigate();
+    const { tripId } = useParams();
+    
+    const [tripDetails, setTripDetails] = useState(null);
+    const [stops, setStops] = useState([]);
+    const [budget, setBudget] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    // Mock Trip Data
-    const tripDetails = {
-        title: "Backpacking in Bali",
-        dates: "Jan 2 - Jan 15, 2026",
-        totalBudget: 2500,
-        spent: 1200,
-        days: [
+    useEffect(() => {
+        if (tripId) {
+            loadTripData();
+        } else {
+            // Fallback to mock data if no tripId
+            loadMockData();
+        }
+    }, [tripId]);
+
+    const loadTripData = async () => {
+        try {
+            setLoading(true);
+            
+            // Load trip details
+            const trip = await tripsAPI.getById(tripId);
+            setTripDetails(trip);
+
+            // Load trip stops
+            const stopsData = await tripStopsAPI.getAll(tripId);
+            setStops(stopsData.stops || []);
+
+            // Load budget
+            const budgetData = await budgetAPI.get(tripId);
+            setBudget(budgetData);
+
+        } catch (err) {
+            console.error("Failed to load trip data:", err);
+            setError(err.message || "Failed to load trip");
+            loadMockData();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadMockData = () => {
+        // Mock data as fallback
+        setTripDetails({
+            id: 1,
+            title: "Backpacking in Bali",
+            start_date: "2026-01-02",
+            end_date: "2026-01-15",
+        });
+
+        setStops([
             {
-                dayNum: 1,
-                date: "Jan 2",
-                location: "Ubud",
+                id: 1,
+                cities: { city_name: "Ubud" },
+                start_date: "2026-01-02",
                 activities: [
-                    { time: "10:00 AM", title: "Sacred Monkey Forest Sanctuary", cost: 15 },
-                    { time: "01:00 PM", title: "Lunch at Bebek Bengil", cost: 30 },
-                    { time: "04:00 PM", title: "Campuhan Ridge Walk", cost: 0 },
+                    { id: 1, activities: { act_name: "Sacred Monkey Forest Sanctuary" }, estimated_cost: 15, scheduled_date: "2026-01-02" },
+                    { id: 2, activities: { act_name: "Lunch at Bebek Bengil" }, estimated_cost: 30, scheduled_date: "2026-01-02" },
                 ]
             },
             {
-                dayNum: 2,
-                date: "Jan 3",
-                location: "Ubud -> Canggu",
+                id: 2,
+                cities: { city_name: "Canggu" },
+                start_date: "2026-01-03",
                 activities: [
-                    { time: "09:00 AM", title: "Tegalalang Rice Terrace", cost: 10 },
-                    { time: "12:00 PM", title: "Taxi Transfer to Canggu", cost: 45 },
-                    { time: "07:00 PM", title: "Dinner & Drinks at Beach Club", cost: 80 },
+                    { id: 3, activities: { act_name: "Tegalalang Rice Terrace" }, estimated_cost: 10, scheduled_date: "2026-01-03" },
+                    { id: 4, activities: { act_name: "Beach Club Dinner" }, estimated_cost: 80, scheduled_date: "2026-01-03" },
                 ]
             }
-        ]
+        ]);
+
+        setBudget({
+            transport_cost: 500,
+            stay_cost: 800,
+            food_cost: 600,
+            activity_cost: 600,
+        });
+
+        setLoading(false);
     };
 
-    const percentUsed = Math.min((tripDetails.spent / tripDetails.totalBudget) * 100, 100);
+    if (loading) {
+        return (
+            <div className="trip-container">
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <p>Loading itinerary...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!tripDetails) {
+        return (
+            <div className="trip-container">
+                <div style={{
+                    padding: '20px',
+                    background: '#FEE2E2',
+                    borderRadius: '8px',
+                    color: '#DC2626'
+                }}>
+                    Trip not found
+                </div>
+            </div>
+        );
+    }
+
+    const calculateTotalBudget = () => {
+        if (budget) {
+            return (budget.transport_cost || 0) + 
+                   (budget.stay_cost || 0) + 
+                   (budget.food_cost || 0) + 
+                   (budget.activity_cost || 0);
+        }
+        return 0;
+    };
+
+    const calculateSpent = () => {
+        let total = 0;
+        stops.forEach(stop => {
+            if (stop.activities) {
+                stop.activities.forEach(activity => {
+                    total += activity.estimated_cost || 0;
+                });
+            }
+        });
+        return total;
+    };
+
+    const totalBudget = calculateTotalBudget();
+    const spent = calculateSpent();
+    const remaining = totalBudget - spent;
+    const percentUsed = totalBudget > 0 ? Math.min((spent / totalBudget) * 100, 100) : 0;
+
+    const getDaysDuration = () => {
+        const start = new Date(tripDetails.start_date);
+        const end = new Date(tripDetails.end_date);
+        return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    };
+
+    const formatDateRange = () => {
+        const start = new Date(tripDetails.start_date);
+        const end = new Date(tripDetails.end_date);
+        return `${start.toLocaleDateString('default', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    };
 
     return (
         <div className="trip-container">
+            {error && (
+                <div style={{
+                    padding: '12px',
+                    background: '#FEF3C7',
+                    border: '1px solid #FCD34D',
+                    borderRadius: '8px',
+                    color: '#92400E',
+                    marginBottom: '20px'
+                }}>
+                    ⚠️ {error} (Showing sample data)
+                </div>
+            )}
 
             {/* HEADER & NAV */}
             <div className="page-header" style={{ marginBottom: '20px' }}>
@@ -58,14 +184,18 @@ const ItineraryView = () => {
                         gap: '5px'
                     }}
                 >
-                    &larr; Back to Trips
+                    ← Back to Trips
                 </button>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
                     <div>
                         <h1 className="page-title">{tripDetails.title}</h1>
-                        <p className="page-subtitle">{tripDetails.dates} • 14 Days</p>
+                        <p className="page-subtitle">{formatDateRange()} • {getDaysDuration()} Days</p>
                     </div>
-                    <button className="btn-primary" style={{ width: 'auto', padding: '10px 20px' }}>
+                    <button 
+                        className="btn-primary" 
+                        style={{ width: 'auto', padding: '10px 20px' }}
+                        onClick={() => navigate(`/build-itinerary/${tripId || tripDetails.id}`, { state: { tripData: tripDetails } })}
+                    >
                         Edit Itinerary
                     </button>
                 </div>
@@ -75,13 +205,13 @@ const ItineraryView = () => {
             <div className="budget-summary">
                 <div className="budget-stat">
                     <span className="stat-label">Total Budget</span>
-                    <span className="stat-value">${tripDetails.totalBudget}</span>
+                    <span className="stat-value">${totalBudget.toFixed(0)}</span>
                 </div>
                 <div className="budget-stat" style={{ flex: 2 }}>
                     <span className="stat-label" style={{ textAlign: 'left' }}>Spending Tracker</span>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '5px' }}>
-                        <span className="text-danger">${tripDetails.spent} Spent</span>
-                        <span className="text-success">${tripDetails.totalBudget - tripDetails.spent} Left</span>
+                        <span className="text-danger">${spent.toFixed(0)} Spent</span>
+                        <span className="text-success">${remaining.toFixed(0)} Left</span>
                     </div>
                     <div className="progress-bg">
                         <div className="progress-fill" style={{ width: `${percentUsed}%` }}></div>
@@ -89,7 +219,7 @@ const ItineraryView = () => {
                 </div>
                 <div className="budget-stat">
                     <span className="stat-label">Avg. / Day</span>
-                    <span className="stat-value">$178</span>
+                    <span className="stat-value">${(totalBudget / getDaysDuration()).toFixed(0)}</span>
                 </div>
             </div>
 
@@ -98,26 +228,54 @@ const ItineraryView = () => {
                 Daily Itinerary & Expenses
             </h3>
 
-            {tripDetails.days.map((day) => (
-                <div key={day.dayNum} className="day-container">
-                    <h4 className="day-header">
-                        Day {day.dayNum} <span style={{ fontWeight: 400, color: '#6b7280' }}>— {day.date} ({day.location})</span>
-                    </h4>
+            {stops.length > 0 ? (
+                stops.map((stop, index) => (
+                    <div key={stop.id} className="day-container">
+                        <h4 className="day-header">
+                            Day {index + 1} 
+                            <span style={{ fontWeight: 400, color: '#6b7280' }}>
+                                — {new Date(stop.start_date).toLocaleDateString('default', { month: 'short', day: 'numeric' })} 
+                                ({stop.cities?.city_name || 'Unknown'})
+                            </span>
+                        </h4>
 
-                    {day.activities.map((activity, index) => (
-                        <div key={index} className="activity-item">
-                            <div className="activity-info">
-                                <span className="activity-time">{activity.time}</span>
-                                <span style={{ fontWeight: 600, color: '#374151' }}>{activity.title}</span>
-                            </div>
-                            <div className="activity-cost">
-                                {activity.cost > 0 ? `-$${activity.cost}` : 'Free'}
-                            </div>
-                        </div>
-                    ))}
+                        {stop.activities && stop.activities.length > 0 ? (
+                            stop.activities.map((activity) => (
+                                <div key={activity.id} className="activity-item">
+                                    <div className="activity-info">
+                                        <span className="activity-time">
+                                            {activity.scheduled_date ? new Date(activity.scheduled_date).toLocaleTimeString('default', { hour: '2-digit', minute: '2-digit' }) : 'All Day'}
+                                        </span>
+                                        <span style={{ fontWeight: 600, color: '#374151' }}>
+                                            {activity.activities?.act_name || activity.title || 'Activity'}
+                                        </span>
+                                    </div>
+                                    <div className="activity-cost">
+                                        {activity.estimated_cost > 0 ? `-$${activity.estimated_cost}` : 'Free'}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p style={{ color: '#9CA3AF', fontStyle: 'italic', padding: '10px' }}>
+                                No activities planned yet
+                            </p>
+                        )}
+                    </div>
+                ))
+            ) : (
+                <div style={{
+                    textAlign: 'center',
+                    padding: '40px',
+                    background: '#F9FAFB',
+                    borderRadius: '12px',
+                    border: '2px dashed #D1D5DB'
+                }}>
+                    <h3 style={{ color: '#6B7280', marginBottom: '10px' }}>No stops added yet</h3>
+                    <p style={{ color: '#9CA3AF', marginBottom: '20px' }}>
+                        Click "Edit Itinerary" to add destinations and activities
+                    </p>
                 </div>
-            ))}
-
+            )}
         </div>
     );
 };

@@ -1,24 +1,18 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAppContext } from "../App";
 import { authAPI } from "../services/api";
 import "../styles/GlobeTrotterAuth.css";
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [formData, setFormData] = useState({ 
+    email: "", 
+    password: "" 
+  });
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError(""); // Clear error on input change
-  };
+  const { login } = useAppContext();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -26,11 +20,26 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await authAPI.login(formData);
-      console.log("Login successful:", response);
+      // Call the actual API
+      const response = await authAPI.login({
+        email: formData.email,
+        password: formData.password
+      });
+
+      // Update context with user data
+      login({
+        id: response.user_id,
+        name: `${response.first_name} ${response.last_name}`,
+        email: response.email,
+        first_name: response.first_name,
+        last_name: response.last_name
+      });
+
+      // Navigate to trips page
       navigate("/trips");
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      console.error("Login failed:", err);
+      setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -55,9 +64,9 @@ const Login = () => {
               borderRadius: '8px',
               color: '#DC2626',
               fontSize: '0.9rem',
-              marginBottom: '20px'
+              marginBottom: '15px'
             }}>
-              {error}
+              ⚠️ {error}
             </div>
           )}
 
@@ -66,12 +75,11 @@ const Login = () => {
               <label className="form-label">Email</label>
               <input
                 type="email"
-                name="email"
                 required
-                placeholder="you@example.com"
+                placeholder="Enter your email"
                 className="form-input"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
 
@@ -84,12 +92,11 @@ const Login = () => {
               </div>
               <input
                 type="password"
-                name="password"
                 required
                 placeholder="••••••••"
                 className="form-input"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
 

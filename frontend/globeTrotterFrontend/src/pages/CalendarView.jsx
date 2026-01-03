@@ -1,19 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { tripsAPI } from "../services/api";
 import "../styles/GlobeTrotterAuth.css";
 import "../styles/TripStyles.css";
 
 const CalendarView = () => {
-    // 1. Setup Navigation State (Current viewing Date)
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [myTrips, setMyTrips] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // 2. Mock Data: User's trips
-    const myTrips = [
-        { id: 1, title: "Trip to Bali", startDate: "2024-02-05", endDate: "2024-02-10" },
-        { id: 2, title: "Paris Business", startDate: "2024-02-14", endDate: "2024-02-16" },
-        { id: 3, title: "Tokyo Adventure", startDate: "2024-03-01", endDate: "2024-03-10" }
-    ];
+    useEffect(() => {
+        loadTrips();
+    }, []);
 
-    // 3. Helper Logic
+    const loadTrips = async () => {
+        try {
+            const response = await tripsAPI.getAll();
+            setMyTrips(response.trips || []);
+        } catch (err) {
+            console.error("Failed to load trips:", err);
+            // Fallback to mock data if API fails
+            setMyTrips([
+                { id: 1, title: "Trip to Bali", start_date: "2026-02-05", end_date: "2026-02-10" },
+                { id: 2, title: "Paris Business", start_date: "2026-02-14", end_date: "2026-02-16" },
+                { id: 3, title: "Tokyo Adventure", start_date: "2026-03-01", end_date: "2026-03-10" }
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Helper Logic
     const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
     const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
@@ -21,7 +37,7 @@ const CalendarView = () => {
     const month = currentDate.getMonth();
 
     const daysInMonth = getDaysInMonth(year, month);
-    const startDay = getFirstDayOfMonth(year, month); // 0 = Sunday, 1 = Monday...
+    const startDay = getFirstDayOfMonth(year, month);
 
     // Handlers for Next/Prev Month
     const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -29,22 +45,31 @@ const CalendarView = () => {
 
     // Check if a specific calendar day falls within any trip range
     const getEventsForDay = (day) => {
-        // Construct comparable date string "YYYY-MM-DD"
-        // Note: Month is 0-indexed in JS, so we add 1. Padding with '0' for matching string.
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
         return myTrips.filter(trip => {
-            // Basic string comparison works for ISO dates
-            return dateStr >= trip.startDate && dateStr <= trip.endDate;
+            const startDate = trip.start_date || trip.startDate;
+            const endDate = trip.end_date || trip.endDate;
+            return dateStr >= startDate && dateStr <= endDate;
         });
     };
 
     // Generate grid arrays
-    const emptySlots = Array.from({ length: startDay }); // Slots before the 1st
-    const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1); // 1 to 31
+    const emptySlots = Array.from({ length: startDay });
+    const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     const today = new Date();
     const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+
+    if (loading) {
+        return (
+            <div className="trip-container" style={{ maxWidth: '1000px' }}>
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <p>Loading calendar...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="trip-container" style={{ maxWidth: '1000px' }}>
@@ -55,16 +80,15 @@ const CalendarView = () => {
 
             {/* HEADER CONTROLS */}
             <div className="calendar-controls">
-                <button onClick={prevMonth} className="calendar-nav-btn">&larr; Previous</button>
+                <button onClick={prevMonth} className="calendar-nav-btn">← Previous</button>
                 <div className="month-label">
                     {currentDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
                 </div>
-                <button onClick={nextMonth} className="calendar-nav-btn">Next &rarr;</button>
+                <button onClick={nextMonth} className="calendar-nav-btn">Next →</button>
             </div>
 
             {/* GRID WRAPPER */}
             <div className="calendar-wrapper">
-
                 {/* Days of Week Header */}
                 <div className="calendar-grid-header">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
@@ -74,7 +98,6 @@ const CalendarView = () => {
 
                 {/* The Grid */}
                 <div className="calendar-grid">
-
                     {/* Empty slots for days belonging to previous month */}
                     {emptySlots.map((_, index) => (
                         <div key={`empty-${index}`} className="calendar-day-cell empty-cell"></div>
@@ -94,7 +117,11 @@ const CalendarView = () => {
                                 {/* Render Trips on this Day */}
                                 <div style={{ marginTop: '5px' }}>
                                     {events.map((ev, i) => (
-                                        <div key={`${ev.id}-${i}`} className="trip-event-marker" title={ev.title}>
+                                        <div 
+                                            key={`${ev.id}-${i}`} 
+                                            className="trip-event-marker" 
+                                            title={ev.title}
+                                        >
                                             {ev.title}
                                         </div>
                                     ))}
@@ -102,15 +129,16 @@ const CalendarView = () => {
                             </div>
                         );
                     })}
-
                 </div>
             </div>
 
             {/* Legend / Tip */}
             <div style={{ marginTop: '20px', color: '#6b7280', fontSize: '0.9rem', textAlign: 'center' }}>
-                Note: Dates are based on current year/month calculations (mock data uses fixed strings).
+                {myTrips.length === 0 
+                    ? "No trips scheduled yet. Create your first trip to see it here!"
+                    : `Showing ${myTrips.length} trip${myTrips.length !== 1 ? 's' : ''}`
+                }
             </div>
-
         </div>
     );
 };
