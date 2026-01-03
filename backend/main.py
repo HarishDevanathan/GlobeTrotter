@@ -1,7 +1,11 @@
-import os
-from fastapi import FastAPI
-from supabase import create_client
+from schemas import LoginRequest, SignupRequest
+from auth_services.auth import signup_user, login_user, get_current_user
+from fastapi import Header
 from dotenv import load_dotenv
+from fastapi import FastAPI
+import os
+from supabase import create_client
+
 
 load_dotenv()
 
@@ -35,3 +39,20 @@ def test_supabase():
             "status": "Supabase connection failed ❌",
             "error": str(e)
         }
+
+@app.post("/signup")
+def signup(payload: SignupRequest):
+    return signup_user(payload)
+
+@app.post("/login")
+def login(payload: LoginRequest):
+    return login_user(payload)
+
+@app.get("/me")
+def me(authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    user = get_current_user(token)
+    return {
+        "id": user.id,
+        "email": user.email
+    }
