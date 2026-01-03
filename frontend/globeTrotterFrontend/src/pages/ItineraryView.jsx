@@ -1,9 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/GlobeTrotterAuth.css";
 import "../styles/TripStyles.css";
 
 const ItineraryView = () => {
+    const navigate = useNavigate();
+
     // Mock Trip Data
     const tripDetails = {
         title: "Backpacking in Bali",
@@ -41,13 +43,31 @@ const ItineraryView = () => {
 
             {/* HEADER & NAV */}
             <div className="page-header" style={{ marginBottom: '20px' }}>
-                <Link to="/listing" style={{ textDecoration: 'none', color: '#6b7280', fontSize: '0.9rem' }}> &larr; Back to Trips</Link>
+                <button
+                    onClick={() => navigate('/trips')}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#6b7280',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        padding: '5px 0',
+                        marginBottom: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                    }}
+                >
+                    &larr; Back to Trips
+                </button>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
                     <div>
                         <h1 className="page-title">{tripDetails.title}</h1>
                         <p className="page-subtitle">{tripDetails.dates} • 14 Days</p>
                     </div>
-                    <button className="btn-primary" style={{ width: 'auto', padding: '10px 20px' }}>Edit Itinerary</button>
+                    <button className="btn-primary" style={{ width: 'auto', padding: '10px 20px' }}>
+                        Edit Itinerary
+                    </button>
                 </div>
             </div>
 
