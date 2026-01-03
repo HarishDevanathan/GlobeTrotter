@@ -1,0 +1,591 @@
+/* Reuse variables from your Auth CSS context, or fallback */
+:root {
+    --brand-primary: #4F46E5;
+    --bg-page: #f3f4f6;
+    --bg-card: #ffffff;
+    --text-main: #111827;
+    --border-color: #e5e7eb;
+}
+
+body {
+    background-color: var(--bg-page);
+}
+
+.trip-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Page Header */
+.page-header {
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: #6b7280;
+}
+
+/* Standard Card */
+.trip-card {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
+}
+
+/* --- SUGGESTIONS GRID (Create Trip Page) --- */
+.suggestions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.suggestion-tag {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: #f9fafb;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    color: #374151;
+}
+
+.suggestion-tag:hover {
+    background: #eef2ff;
+    border-color: var(--brand-primary);
+}
+
+.suggestion-tag.selected {
+    background: var(--brand-primary);
+    color: white;
+    border-color: var(--brand-primary);
+}
+
+/* --- ITINERARY SECTION (Build Page) --- */
+.section-card {
+    border-left: 5px solid var(--brand-primary);
+    /* visual indicator */
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.btn-remove {
+    background: transparent;
+    color: #ef4444;
+    /* Red */
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.btn-add-section {
+    width: 100%;
+    padding: 15px;
+    border: 2px dashed #a5b4fc;
+    background: #eef2ff;
+    color: var(--brand-primary);
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+}
+
+.btn-add-section:hover {
+    background: #e0e7ff;
+    border-color: var(--brand-primary);
+}
+
+/* Reuse Input Styles manually if not inheriting */
+.input-standard {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    /* Crucial */
+}
+
+/* --- TRIP LISTING GRID --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.listing-card {
+    overflow: hidden;
+    /* For image */
+    padding: 0;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.listing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.status-ongoing {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Green */
+.status-upcoming {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Blue */
+.status-completed {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+/* Gray */
+
+/* --- ITINERARY VIEW (BUDGET) --- */
+.budget-summary {
+    display: flex;
+    gap: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 30px;
+    align-items: center;
+}
+
+.budget-stat {
+    flex: 1;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.text-danger {
+    color: #ef4444;
+}
+
+.text-success {
+    color: #10b981;
+}
+
+/* Progress Bar */
+.progress-bg {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--brand-primary);
+}
+
+/* --- DAY-WISE TIMELINE --- */
+.day-container {
+    border-left: 2px solid #e5e7eb;
+    padding-left: 20px;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.day-container::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    /* center on line */
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+}
+
+.day-header {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-main);
+}
+
+.activity-item {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.activity-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.activity-time {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f9fafb;
+    padding: 5px 10px;
+    border-radius: 6px;
+}
+
+.activity-cost {
+    font-weight: 600;
+    color: #ef4444;
+    /* Red for expenses */
+}
+
+/* --- USER PROFILE SECTION --- */
+.profile-header-card {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    background: var(--bg-card);
+    padding: 35px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.profile-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #eef2ff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.edit-btn {
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.edit-btn.active {
+    background-color: var(--brand-primary);
+    color: white;
+    border-color: var(--brand-primary);
+}
+
+/* --- SEARCH & DISCOVERY --- */
+.search-toolbar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    align-items: center;
+}
+
+.search-input-wrapper {
+    flex: 3;
+    position: relative;
+}
+
+.search-main-input {
+    width: 100%;
+    padding: 16px 20px 16px 50px;
+    /* Space for icon */
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+    background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%239CA3AF"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>') no-repeat 18px center;
+    background-size: 20px;
+    transition: all 0.2s;
+}
+
+.search-main-input:focus {
+    border-color: var(--brand-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.filter-select {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    font-family: inherit;
+    color: var(--text-main);
+    cursor: pointer;
+    min-width: 140px;
+}
+
+/* Horizontal Search Result Card */
+.result-card-horizontal {
+    display: flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.result-card-horizontal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.05);
+}
+
+.result-img-side {
+    width: 280px;
+    object-fit: cover;
+    min-height: 200px;
+}
+
+.result-content {
+    padding: 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+.result-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.pill-badge {
+    background: #f3f4f6;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.rating-badge {
+    background: #FEF3C7;
+    /* Amber */
+    color: #D97706;
+    font-weight: 700;
+}
+
+.price-tag {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+}
+
+/* Mobile responsive for horizontal cards */
+@media (max-width: 768px) {
+    .result-card-horizontal {
+        flex-direction: column;
+    }
+
+    .result-img-side {
+        width: 100%;
+        height: 180px;
+    }
+}
+
+/* --- CALENDAR VIEW --- */
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 15px 25px;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+}
+
+.month-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-transform: capitalize;
+}
+
+.calendar-nav-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.calendar-nav-btn:hover {
+    background: #f3f4f6;
+    color: var(--text-main);
+}
+
+.calendar-wrapper {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 16px 16px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.calendar-grid-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.weekday-name {
+    font-weight: 600;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    padding: 10px 0;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e5e7eb;
+    /* Grid Lines Color */
+    border: 1px solid #e5e7eb;
+}
+
+.calendar-day-cell {
+    background: white;
+    min-height: 120px;
+    padding: 8px;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.calendar-day-cell:hover {
+    background: #f9fafb;
+}
+
+.day-number {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+}
+
+.day-number.today {
+    background: var(--brand-primary);
+    color: white;
+}
+
+.empty-cell {
+    background: #f9fafb;
+}
+
+/* Event / Trip Markers inside the calendar */
+.trip-event-marker {
+    font-size: 0.75rem;
+    background: #eef2ff;
+    color: var(--brand-primary);
+    border-left: 3px solid var(--brand-primary);
+    padding: 4px 6px;
+    margin-top: 4px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.trip-event-marker:hover {
+    background: #e0e7ff;
+}

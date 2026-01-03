@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --brand-primary: #4F46E5;
+    /* Your Indigo Theme Color */
+    --brand-hover: #4338ca;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --bg-input: #f9fafb;
+    --border-input: #e5e7eb;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+}
+
+/* --- MAIN CONTAINER --- */
+.auth-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* --- FORM SECTION --- */
+.auth-side-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 60px;
+    background: white;
+    width: 50%;
+}
+
+.auth-content-box {
+    max-width: 450px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Headers */
+.auth-brand {
+    color: var(--brand-primary);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.auth-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Inputs */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-input);
+    background-color: var(--bg-input);
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    /* Crucial for proper sizing */
+}
+
+.form-input:focus {
+    background-color: #fff;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.link-forgot {
+    font-size: 0.875rem;
+    color: var(--brand-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Button */
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--brand-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-hover);
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    background-color: #a5b4fc;
+    cursor: not-allowed;
+}
+
+/* Footer Link */
+.auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f3f4f6;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.link-signup {
+    color: var(--brand-primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* --- IMAGE SECTION --- */
+.auth-side-image {
+    flex: 1;
+    width: 50%;
+    padding: 20px;
+    background-color: #f3f4f6;
+    display: flex;
+    /* Centers the image card */
+    align-items: center;
+    justify-content: center;
+}
+
+/* The card container for the image */
+.image-card-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.5s ease;
+}
+
+.image-card-frame:hover .hero-img {
+    transform: scale(1.05);
+    /* Slight zoom on hover */
+}
+
+.image-overlay-text {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    right: 40px;
+    color: white;
+    z-index: 10;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.overlay-quote {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+    .auth-side-image {
+        display: none;
+        /* Hide image on tablet/mobile */
+    }
+
+    .auth-side-form {
+        width: 100%;
+        padding: 20px;
+    }
+}
